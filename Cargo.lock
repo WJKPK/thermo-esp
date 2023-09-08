@@ -77,6 +77,7 @@ checksum = "630be753d4e58660abd17930c71b647fe46c27ea6b63cc59e1e3851406972e42"
 [[package]]
 name = "bleps"
 version = "0.1.0"
+source = "git+https://github.com/bjoernQ/bleps?rev=b82f1e7009bef7e32f0918be5b186188aa5e7109#b82f1e7009bef7e32f0918be5b186188aa5e7109"
 dependencies = [
  "bleps-macros",
  "critical-section",
@@ -88,6 +89,7 @@ dependencies = [
 [[package]]
 name = "bleps-macros"
 version = "0.1.0"
+source = "git+https://github.com/bjoernQ/bleps?rev=b82f1e7009bef7e32f0918be5b186188aa5e7109#b82f1e7009bef7e32f0918be5b186188aa5e7109"
 dependencies = [
  "litrs",
  "proc-macro2",

@@ -4,7 +4,6 @@ use embassy_sync::signal::Signal;
 use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
 use embassy_time::{Duration, Timer};
 use heapless::Vec;
-
 static SHARED: Signal<CriticalSectionRawMutex, RequestedMode> = Signal::new();
 pub static TEMPERATURE_SIGNAL: Signal<CriticalSectionRawMutex, u16> = Signal::new();
 static TEMPERATURE: AtomicU16 = AtomicU16::new(0);
@@ -18,7 +17,7 @@ struct KeepTemperature {
 
 impl KeepTemperature {
     fn decide_heater_state_change(&self, actual_temperature: u16) -> Option<bool> {
-        log::debug!("KeepTemperature: actual: {}, requested: {}", actual_temperature, self.temperature);
+        log::info!("KeepTemperature: actual: {}, requested: {}", actual_temperature, self.temperature);
         if actual_temperature >= (self.temperature + self.histeresis) {
             Some(false)
         } else if actual_temperature < (self.temperature - self.histeresis) {
@@ -43,7 +42,7 @@ impl Heating {
         let slope: u32 = (d_temp as u32/self.expected_heating_duration_s).into();
         let expected_temperature = (duration_of_state_time * slope) + shared_data.temperature_when_actual_state_start as u32;
         let actual_temperature = TEMPERATURE.load(Ordering::Relaxed);
-        log::debug!("Heating: actual: {} expected: {}", actual_temperature, expected_temperature);
+        log::info!("Heating: actual: {} expected: {}", actual_temperature, expected_temperature);
 
         if u32::from(actual_temperature) > expected_temperature {
             false
@@ -173,6 +172,12 @@ impl HeaterStateMachine {
         }
     }
 
+    fn reset(&mut self) {
+        self.state = State::Off;
+        self.shared_data.thermo.set_heater_state(false);
+        self.shared_data.actual_time = 0;
+    }
+
     fn is_time_for_state_transition(&self, events_list: &[Event; 3]) -> Option<Event> {
         let actual_time = self.shared_data.actual_time;
         let mut rolling_sum = Vec::<u32, 4>::new();
@@ -250,6 +255,7 @@ pub async fn run(thermo: ThermoControl<ThermoToggler>) {
         let requested_state = SHARED.wait().await;
         loop {
             if requested_state == RequestedMode::Off {
+                state_machine.reset();
                 break;
             }
 

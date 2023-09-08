@@ -25,7 +25,7 @@ static EXECUTOR: StaticCell<Executor> = StaticCell::new();
 
 #[entry]
 fn main() -> ! {
-    init_logger(log::LevelFilter::Debug);
+    init_logger(log::LevelFilter::Info);
     let peripherals = Peripherals::take();
 
     let system = examples_util::system!(peripherals);
